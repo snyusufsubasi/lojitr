@@ -33,6 +33,10 @@ export default {
           'sans-serif',
         ],
       },
+      boxShadow: {
+        glow: '0 0 25px -5px rgba(99, 102, 241, 0.4)',
+        card: '0 2px 10px -2px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.05)',
+      },
     },
   },
   plugins: [],

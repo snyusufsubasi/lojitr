@@ -1,0 +1,16 @@
+{
+  "name": "LojiTR - Filo & Nakliye Yönetimi",
+  "short_name": "LojiTR",
+  "description": "Yeni Nesil Nakliye, Sefer, Masraf ve Filo Yönetim Platformu",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
