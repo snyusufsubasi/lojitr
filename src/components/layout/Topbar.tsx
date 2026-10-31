@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, Bell, Mic, Sun, Moon } from 'lucide-react';
+import { Search, Plus, Bell, Mic, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuthStore } from '@/domain/store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -38,6 +38,17 @@ export const Topbar: React.FC<TopbarProps> = ({
 
       {/* Action Buttons */}
       <div className="flex items-center gap-2.5">
+        <a
+          href="/tanitim"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-500/40 transition-all shadow-sm"
+          title="Tanıtım Sayfasını Yeni Sekmede Aç"
+        >
+          <Globe className="w-3.5 h-3.5 text-brand-500" />
+          <span>Tanıtım Sitesi</span>
+        </a>
+
         <Button
           variant="outline"
           size="sm"

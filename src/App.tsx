@@ -28,6 +28,9 @@ import { LicensePage } from '@/pages/license/LicensePage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { VerifyDocumentPage } from '@/pages/public/VerifyDocumentPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
+import { LandingPage } from '@/pages/marketing/LandingPage';
+import { VehicleDetailPage } from '@/pages/vehicles/VehicleDetailPage';
+import { ApprovalsPage } from '@/pages/approvals/ApprovalsPage';
 
 export const App: React.FC = () => {
   const { initialize, theme } = useAuthStore();
@@ -49,6 +52,7 @@ export const App: React.FC = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/giris" element={<LoginPage />} />
+        <Route path="/tanitim" element={<LandingPage />} />
         <Route path="/dogrula/:token" element={<VerifyDocumentPage />} />
 
         {/* Authenticated / Demo Layout Shell */}
@@ -79,6 +83,7 @@ export const App: React.FC = () => {
           
           {/* Vehicles & Fleet */}
           <Route path="araclar" element={<VehiclesListPage />} />
+          <Route path="araclar/:id" element={<VehicleDetailPage />} />
           <Route path="araclar/:id/lastik" element={<VehicleTiresPage />} />
           
           {/* Drivers */}
@@ -87,6 +92,9 @@ export const App: React.FC = () => {
           
           {/* Documents Archive */}
           <Route path="belgeler" element={<DocumentsPage />} />
+
+          {/* Approvals */}
+          <Route path="onaylar" element={<ApprovalsPage />} />
           
           {/* Reports */}
           <Route path="raporlar" element={<ReportsPage />} />
