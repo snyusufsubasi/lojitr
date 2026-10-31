@@ -196,8 +196,7 @@ export const DashboardPage: React.FC = () => {
               size="sm"
               onClick={() => navigate('/seferler')}
               className="text-xs text-brand-600 dark:text-brand-400"
-            >
-              Tümünü Gör
+            >\n              Tümünü Gör
               <ChevronRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           </div>
@@ -223,7 +222,7 @@ export const DashboardPage: React.FC = () => {
                               ? 'success'
                               : t.status === 'yolda'
                               ? 'brand'
-                              : 'warning'
+                              : 'slate'
                           }
                           size="sm"
                         >
@@ -231,32 +230,24 @@ export const DashboardPage: React.FC = () => {
                             ? 'Teslim Edildi'
                             : t.status === 'yolda'
                             ? 'Yolda'
-                            : 'Yükleniyor'}
+                            : 'Planlandı'}
                         </Badge>
                       </div>
-                      <p className="text-xs text-slate-500">
-                        {t.cargo} · {formatDateShort(t.pickupDate)} · İrsaliye: #{t.waybillNo || '---'}
-                      </p>
+                      <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <span>{t.cargo || 'Yük'}</span>
+                        <span>•</span>
+                        <span className="font-mono">{t.km} km</span>
+                        <span>•</span>
+                        <span>{formatDateShort(t.date)}</span>
+                      </div>
                     </div>
 
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 dark:border-slate-800">
-                      <span className="text-base font-black text-slate-900 dark:text-white tabular-nums">
+                    <div className="text-right sm:border-l border-slate-100 dark:border-slate-800 sm:pl-4">
+                      <div className="text-sm font-black text-slate-900 dark:text-white tabular-nums">
                         {formatMoney(fin.netReceivable)}
-                      </span>
-                      <span
-                        className={`text-[11px] font-bold ${
-                          fin.collectionStatus === 'tamam'
-                            ? 'text-emerald-500'
-                            : fin.collectionStatus === 'kismi'
-                            ? 'text-amber-500'
-                            : 'text-rose-500'
-                        }`}
-                      >
-                        {fin.collectionStatus === 'tamam'
-                          ? 'Tahsil Edildi'
-                          : fin.collectionStatus === 'kismi'
-                          ? `Kısmi: ${formatMoney(fin.paid)}`
-                          : `Kalan: ${formatMoney(fin.remaining)}`}
+                      </div>
+                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold block">
+                        Net Kâr: {formatMoney(fin.netProfit)}
                       </span>
                     </div>
                   </div>
@@ -266,12 +257,12 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Financial Agenda (1 col) */}
+        {/* 60-Day Financial Agenda & Reminders (1 col) */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Calendar className="w-4 h-4 text-brand-500" />
-              Finansal Ajanda
+              Finans Ajandası & Vade
             </h3>
             <Button
               variant="ghost"
@@ -283,20 +274,22 @@ export const DashboardPage: React.FC = () => {
             </Button>
           </div>
 
-          <Card className="p-4 space-y-3">
+          <Card className="space-y-3 p-4">
             {agendaItems.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-4">Yaklaşan ödeme veya tahsilat yok.</p>
+              <p className="text-xs text-slate-400 text-center py-6">
+                Yaklaşan vade veya ödeme bulunmuyor.
+              </p>
             ) : (
-              agendaItems.map((item, idx) => (
+              agendaItems.map((item) => (
                 <div
-                  key={idx}
-                  className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800 last:border-b-0"
+                  key={item.id}
+                  className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800/80 last:border-none last:pb-0"
                 >
                   <div className="space-y-0.5">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block truncate max-w-[170px]">
+                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block truncate max-w-[180px]">
                       {item.title}
                     </span>
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-[10px] text-slate-400">
                       Vade: {formatDateShort(item.date)}
                     </span>
                   </div>
@@ -304,16 +297,18 @@ export const DashboardPage: React.FC = () => {
                   <div className="text-right">
                     <span
                       className={`text-xs font-black tabular-nums block ${
-                        item.type === 'tahsilat' ? 'text-emerald-500' : 'text-rose-500'
+                        item.direction === 'in'
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-rose-600 dark:text-rose-400'
                       }`}
                     >
-                      {item.type === 'tahsilat' ? '+' : '-'} {formatMoney(item.amount)}
+                      {item.direction === 'in' ? '+' : '-'} {formatMoney(item.amount)}
                     </span>
                     <Badge
-                      variant={item.type === 'tahsilat' ? 'success' : 'danger'}
+                      variant={item.tag === 'overdue' ? 'danger' : 'slate'}
                       size="sm"
                     >
-                      {item.type === 'tahsilat' ? 'Tahsilat' : 'Ödeme'}
+                      {item.tag === 'overdue' ? 'Gecikti' : 'Vadesi Var'}
                     </Badge>
                   </div>
                 </div>

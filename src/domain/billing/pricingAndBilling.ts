@@ -11,7 +11,42 @@ export interface PlanPackage {
   badge?: string;
 }
 
-export const PACKAGES: PlanPackage[] = [\n  {\n    code: 'baslangic',\n    name: 'Başlangıç',\n    vehicleLimit: 3,\n    storageGb: 3,\n    yearlyGross: 4990,\n    monthlyEquivalent: 416,\n  },\n  {\n    code: 'standart',\n    name: 'Standart',\n    vehicleLimit: 10,\n    storageGb: 10,\n    yearlyGross: 9990,\n    monthlyEquivalent: 833,\n    badge: 'En Çok Tercih Edilen',\n  },\n  {\n    code: 'profesyonel',\n    name: 'Profesyonel',\n    vehicleLimit: 25,\n    storageGb: 25,\n    yearlyGross: 19990,\n    monthlyEquivalent: 1666,\n  },\n  {\n    code: 'sinirsiz',\n    name: 'Sınırsız',\n    vehicleLimit: null,\n    storageGb: 50,\n    yearlyGross: 39990,\n    monthlyEquivalent: 3333,\n    badge: 'Kurumsal',\n  },\n];
+export const PACKAGES: PlanPackage[] = [
+  {
+    code: 'baslangic',
+    name: 'Başlangıç',
+    vehicleLimit: 3,
+    storageGb: 3,
+    yearlyGross: 4990,
+    monthlyEquivalent: 416,
+  },
+  {
+    code: 'standart',
+    name: 'Standart',
+    vehicleLimit: 10,
+    storageGb: 10,
+    yearlyGross: 9990,
+    monthlyEquivalent: 833,
+    badge: 'En Çok Tercih Edilen',
+  },
+  {
+    code: 'profesyonel',
+    name: 'Profesyonel',
+    vehicleLimit: 25,
+    storageGb: 25,
+    yearlyGross: 19990,
+    monthlyEquivalent: 1666,
+  },
+  {
+    code: 'sinirsiz',
+    name: 'Sınırsız',
+    vehicleLimit: null,
+    storageGb: 50,
+    yearlyGross: 39990,
+    monthlyEquivalent: 3333,
+    badge: 'Kurumsal',
+  },
+];
 
 export function isBillableVehicle(v: Pick<Vehicle, 'active' | 'type' | 'ownership'>): boolean {
   return Boolean(v.active && v.type !== 'dorse' && v.ownership !== 'dis');
