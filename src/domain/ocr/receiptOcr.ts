@@ -72,7 +72,7 @@ export async function preprocessReceiptImage(file: File): Promise<Blob> {
 
 export function parseReceiptText(rawText: string): Omit<OcrReceiptResult, 'rawText'> {
   const lines = rawText
-    .split(/\\r?\\n/)
+    .split(/\r?\n/)
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
 
@@ -82,6 +82,7 @@ export function parseReceiptText(rawText: string): Omit<OcrReceiptResult, 'rawTe
   let date: string | undefined;
   let merchant: string | undefined;
 
+  // 1. Merchant Name
   const gasStations = ['PETROL', 'OPET', 'SHELL', 'BP', 'TOTAL', 'AYTEMIZ', 'TP', 'LUKOIL', 'SOCAR', 'GO', 'MOIL', 'KADOIL', 'ALPET', 'SUNPET'];
   for (let i = 0; i < Math.min(lines.length, 6); i++) {
     const norm = trNormalize(lines[i]).toUpperCase();
@@ -91,23 +92,26 @@ export function parseReceiptText(rawText: string): Omit<OcrReceiptResult, 'rawTe
     }
   }
 
-  const dateMatch = rawText.match(/(\\d{2})[./-](\\d{2})[./-](\\d{4})/);
+  // 2. Date
+  const dateMatch = rawText.match(/(\d{2})[./-](\d{2})[./-](\d{4})/);
   if (dateMatch) {
     const [, d, m, y] = dateMatch;
     date = `${y}-${m}-${d}`;
   }
 
-  const ltMatch = rawText.match(/(\\d+[.,]\\d{1,2})\\s*(?:LT|L|LITRE)/i);
+  // 3. Litres & Unit Price
+  const ltMatch = rawText.match(/(\d+[.,]\d{1,2})\s*(?:LT|L|LITRE)/i);
   if (ltMatch) {
     litres = parseFloat(ltMatch[1].replace(',', '.'));
   }
 
-  const priceMatch = rawText.match(/(\\d+[.,]\\d{1,2})\\s*(?:TL\\/LT|\\*)/i);
+  const priceMatch = rawText.match(/(\d+[.,]\d{1,2})\s*(?:TL\/LT|\*)/i);
   if (priceMatch) {
     unitPrice = parseFloat(priceMatch[1].replace(',', '.'));
   }
 
-  const totalRegex = /(?:TOPLAM|TOP|TUTAR|ODENECEK|KRED[Iİ]|NAK[Iİ]T)\\s*[:*]?\\s*\\*?(\\d+[.,]\\d{2})/i;
+  // 4. Total Amount
+  const totalRegex = /(?:TOPLAM|TOP|TUTAR|ODENECEK|KRED[Iİ]|NAK[Iİ]T)\s*[:*]?\s*\*?(\d+[.,]\d{2})/i;
   for (const line of lines) {
     const tm = line.match(totalRegex);
     if (tm) {
@@ -116,9 +120,10 @@ export function parseReceiptText(rawText: string): Omit<OcrReceiptResult, 'rawTe
     }
   }
 
+  // Fallback: look for lines starting with *
   if (!amount) {
     for (const line of lines) {
-      const starMatch = line.match(/\\*\\s*(\\d+[.,]\\d{2})/);
+      const starMatch = line.match(/\*\s*(\d+[.,]\d{2})/);
       if (starMatch) {
         amount = parseFloat(starMatch[1].replace(',', '.'));
         break;
@@ -126,6 +131,7 @@ export function parseReceiptText(rawText: string): Omit<OcrReceiptResult, 'rawTe
     }
   }
 
+  // Calculate missing litres if unit price and amount are available
   if (!litres && amount && unitPrice && unitPrice > 10) {
     litres = Math.round((amount / unitPrice) * 100) / 100;
   }

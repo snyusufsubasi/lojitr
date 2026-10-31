@@ -47,7 +47,7 @@ export function parseSpokenAmount(text: string): number | undefined {
     .replace(/(\d)\.(\d{3})\b/g, '$1$2')
     .replace(/(\\d),(\\d{1,2})\\b/g, '$1.$2');
 
-  const kMatch = /(\\d+(?:\\.\\d+)?)\\s*(bin|bın|k)\\b/.exec(norm);
+  const kMatch = /(\d+(?:\.\d+)?)\s*(bin|bın|k)\b/.exec(norm);
   if (kMatch) return Math.round(parseFloat(kMatch[1]) * 1000);
 
   const tokens = norm.split(/[^a-z0-9.]+/).filter(Boolean);
@@ -64,7 +64,7 @@ export function parseSpokenAmount(text: string): number | undefined {
         total += (current || 1) * val;
         current = 0;
       } else current += val;
-    } else if (/^\\d+(\\.\\d+)?$/.test(tok)) {
+    } else if (/^\d+(\.\d+)?$/.test(tok)) {
       const n = parseFloat(tok);
       if (n >= 50) return Math.round(n * 100) / 100;
     }
@@ -72,7 +72,7 @@ export function parseSpokenAmount(text: string): number | undefined {
   const wordResult = total + current;
   if (matchedWord && wordResult >= 50) return wordResult;
 
-  const nums = (norm.match(/\\d+(?:\\.\\d+)?/g) || []).map(Number).filter((n) => n >= 10);
+  const nums = (norm.match(/\d+(?:\.\d+)?/g) || []).map(Number).filter((n) => n >= 10);
   if (nums.length > 0) return Math.max(...nums);
   return undefined;
 }
@@ -83,7 +83,7 @@ export function parseSpokenTrip(transcript: string): {
   freight?: number;
   cargo?: string;
 } {
-  const words = transcript.trim().split(/\\s+/).filter(Boolean);
+  const words = transcript.trim().split(/\s+/).filter(Boolean);
   const foundCities: string[] = [];
 
   for (const w of words) {

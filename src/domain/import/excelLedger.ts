@@ -58,12 +58,14 @@ export function parseExcelWorkbook(data: ArrayBuffer): {
     const rows = XLSX.utils.sheet_to_json<any[]>(ws, { header: 1 });
     if (!rows || rows.length < 2) continue;
 
+    // Scan rows for trip or expense data
     for (let r = 1; r < rows.length; r++) {
       const row = rows[r];
       if (!row || row.length === 0) continue;
 
+      // Detect trips: usually has Date, Plate, Origin, Destination, Amount
       const firstCol = String(row[0] || '').trim();
-      const dateMatch = firstCol.match(/(\d{4})[./-](\d{2})[./-](\d{2})/) || firstCol.match(/(\d{2})[./-](\d{2})[./-](\d{4})/);
+      const dateMatch = firstCol.match(/(\d{4})[./-](\d{2})[./-](\d{2})/) || firstCol.match(/(\d{2})[./-](\\d{2})[./-](\\d{4})/);
       
       if (dateMatch) {
         let date = firstCol;
@@ -71,6 +73,7 @@ export function parseExcelWorkbook(data: ArrayBuffer): {
           date = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
         }
 
+        // If row has plate-like string in col 1 or 2
         const col1 = String(row[1] || '').trim().toUpperCase();
         const col2 = String(row[2] || '').trim();
         const col3 = String(row[3] || '').trim();

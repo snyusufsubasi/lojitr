@@ -19,6 +19,20 @@ export function parseWithholdingFraction(code?: string): number {
   return d > 0 ? Number(m[1]) / d : 0;
 }
 
+export function computeFreightFromUnit(
+  kind: 'sabit' | 'ton' | 'km' | undefined,
+  unitPrice?: number,
+  weightTon?: number,
+  km?: number
+): number | null {
+  if (!kind || kind === 'sabit') return null;
+  const price = unitPrice ?? 0;
+  if (price <= 0) return 0;
+  if (kind === 'ton') return Math.round((weightTon ?? 0) * price * 100) / 100;
+  if (kind === 'km') return Math.round((km ?? 0) * price * 100) / 100;
+  return null;
+}
+
 export function calculateTripFinancials(t: Trip) {
   const r = (t.vatRate ?? 20) / 100;
   let freightNet = 0;
@@ -89,4 +103,63 @@ export function calculateTripFinancials(t: Trip) {
     remainingFx,
     collectionStatus,
   };
+}
+
+export function allocateGeneralPaymentsToTrips(trips: Trip[], payments: Payment[]): Trip[] {
+  const poolByContactCurrency = new Map<string, number>();
+
+  for (const p of payments) {
+    if (p.kind !== 'tahsilat' || !p.contactId || p.tripId) continue;
+    const cur = p.currency ?? 'TRY';
+    const key = `${p.contactId}|${cur}`;
+    const amt = cur === 'TRY' ? p.amount : (p.originalAmount ?? p.amount);
+    if (amt > 0) {
+      poolByContactCurrency.set(key, (poolByContactCurrency.get(key) ?? 0) + amt);
+    }
+  }
+
+  if (poolByContactCurrency.size === 0) return trips;
+
+  const sortedIndices = trips
+    .map((t, idx) => ({ t, idx }))
+    .filter(({ t }) => t.contactId && t.status !== 'iptal')
+    .sort((a, b) => a.t.date.localeCompare(b.t.date));
+
+  const allocatedTry = new Map<number, number>();
+  const allocatedFx = new Map<number, number>();
+
+  for (const { t, idx } of sortedIndices) {
+    const cur = t.currency ?? 'TRY';
+    const key = `${t.contactId}|${cur}`;
+    const available = poolByContactCurrency.get(key) ?? 0;
+    if (available <= 0.009) continue;
+
+    const fin = calculateTripFinancials(t);
+    if (cur === 'TRY') {
+      if (fin.remaining <= 0.009) continue;
+      const take = Math.min(available, fin.remaining);
+      allocatedTry.set(idx, take);
+      poolByContactCurrency.set(key, available - take);
+    } else {
+      const remFx = fin.remainingFx ?? 0;
+      if (remFx <= 0.009) continue;
+      const takeFx = Math.min(available, remFx);
+      allocatedFx.set(idx, takeFx);
+      allocatedTry.set(idx, round2(takeFx * (t.fxRate || 1)));
+      poolByContactCurrency.set(key, available - takeFx);
+    }
+  }
+
+  if (allocatedTry.size === 0) return trips;
+
+  return trips.map((t, idx) => {
+    const addTry = allocatedTry.get(idx);
+    if (!addTry) return t;
+    const addFx = allocatedFx.get(idx);
+    return {
+      ...t,
+      collected: round2(t.collected + addTry),
+      collectedFx: addFx !== undefined ? round2((t.collectedFx ?? 0) + addFx) : t.collectedFx,
+    };
+  });
 }

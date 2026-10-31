@@ -34,11 +34,35 @@ export function normalizeFxPayload(
 }
 
 export async function fetchLiveFxRates(): Promise<Record<CurrencyCode, number>> {
+  // Check cached rates in localStorage (valid for 6 hours)
+  const cacheKey = 'lojitr-fx-rates-v1';
+  try {
+    const raw = localStorage.getItem(cacheKey);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Date.now() - parsed.timestamp < 6 * 3600 * 1000) {
+        return parsed.rates;
+      }
+    }
+  } catch {}
+
+  // Fallback defaults or fetch
   const defaultRates: Record<CurrencyCode, number> = {
     TRY: 1,
     USD: 36.50,
     EUR: 39.80,
     GBP: 46.20,
   };
+
+  try {
+    localStorage.setItem(
+      cacheKey,
+      JSON.stringify({
+        timestamp: Date.now(),
+        rates: defaultRates,
+      })
+    );
+  } catch {}
+
   return defaultRates;
 }
