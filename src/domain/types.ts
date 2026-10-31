@@ -1,4 +1,4 @@
-// Central TypeScript domain definitions for LojiTR
+// Central TypeScript domain definitions for LojiTR v3.0
 
 export type CurrencyCode = 'TRY' | 'USD' | 'EUR' | 'GBP';
 export type VehicleType = 'tir' | 'kamyon' | 'kamyonet' | 'dorse' | 'diger';
@@ -19,6 +19,11 @@ export interface Vehicle {
   axleConfig?: AxleConfigCode;
   hasSpare?: boolean;
   avgFuelPer100Km?: number;
+  tankCapacityLitres?: number;
+  targetFuelConsumptionL100Km?: number;
+  adBlueCapacityLitres?: number;
+  nextMaintenanceKm?: number;
+  nextMaintenanceDate?: string;
   active: boolean;
   note?: string;
 }
@@ -61,6 +66,8 @@ export interface Contact {
   dueDays?: number;
   creditLimit?: number;
   tags?: string[];
+  taxNumberValidated?: boolean;
+  ibanValidated?: boolean;
   active?: boolean;
   note?: string;
 }
@@ -81,7 +88,7 @@ export interface MoneyAccount {
   note?: string;
 }
 
-export type TripPricingKind = 'sabit' | 'ton' | 'km';
+export type TripPricingKind = 'sabit' | 'ton' | 'km' | 'palet';
 export type TripInvoiceStatus = 'kesilmedi' | 'kesildi' | 'iade';
 export type TripStatus = 'planlandi' | 'yolda' | 'tamamlandi' | 'iptal';
 export type VatWithholdingCode = '2/10' | '5/10' | '7/10' | '9/10';
@@ -107,6 +114,14 @@ export interface Trip {
   endKm?: number;
   pricingKind?: TripPricingKind;
   unitPrice?: number;
+  weighbridgeStartTon?: number;
+  weighbridgeEndTon?: number;
+  weighbridgeLossTolerancePct?: number;
+  breakEvenFreight?: number;
+  estimatedFuelCost?: number;
+  estimatedTollCost?: number;
+  estimatedDriverPay?: number;
+  estimatedTireWearCost?: number;
   waybillNo?: string;
   invoiceStatus?: TripInvoiceStatus;
   invoiceNo?: string;
@@ -153,8 +168,16 @@ export interface Expense {
   customLabel?: string;
   amount: number;
   vatRate?: number;
+  unitPrice?: number;
   litres?: number;
   km?: number;
+  prevKm?: number;
+  isFullTank?: boolean;
+  consumptionPer100Km?: number;
+  costPerKm?: number;
+  stationName?: string;
+  fuelDiscountPct?: number;
+  anomalyFlags?: string[];
   source: ExpenseSource;
   moneyAccountId?: string;
   receiptUrl?: string;
@@ -219,7 +242,6 @@ export interface BankCheck {
 export interface LedgerAdjustment {
   id: string;
   contactId: string;
-  transferId?: string;
   ledger: 'receivable' | 'payable';
   direction: 'borc' | 'alacak';
   amount: number;
@@ -305,4 +327,17 @@ export interface InvoiceLine {
   net: number;
   vat: number;
   total: number;
+}
+
+export interface ApprovalItem {
+  id: string;
+  kind: 'expense' | 'trip' | 'advance';
+  title: string;
+  requesterName: string;
+  vehiclePlate?: string;
+  amount: number;
+  date: string;
+  status: 'pending' | 'approved' | 'rejected';
+  details: string;
+  referenceId: string;
 }
